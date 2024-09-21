@@ -20,12 +20,15 @@ const envVarsSchema = z.object({
   EMAIL_FROM: z.string(),
   FAST2SMS_API_KEY: z.string(),
   CLOUDFLARE_TURNSTILE_SECRET_KEY: z.string(),
-  SERVER_URL: z.string().default('http://localhost:3000')
+  SERVER_URL: z.string().default('http://localhost:3000'),
+  GOOGLE_CLIENT_ID: z.string(),
+  GOOGLE_CLIENT_SECRET: z.string(),
+  GOOGLE_CALLBACK_URL: z.string(),
 })
 
 const envVars = envVarsSchema.parse(process.env);
 
-export default {
+export const config = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
   serverUrl: envVars.SERVER_URL,
@@ -35,6 +38,13 @@ export default {
     refreshExpirationDays: envVars.JWT_REFRESH_EXPIRATION_DAYS,
     resetPasswordExpirationMinutes: envVars.JWT_RESET_PASSWORD_EXPIRATION_MINUTES,
     verifyEmailExpirationMinutes: envVars.JWT_VERIFY_EMAIL_EXPIRATION_MINUTES
+  },
+  oauth:{
+    google:{
+      clientId: envVars.GOOGLE_CLIENT_ID,
+      clientSecret: envVars.GOOGLE_CLIENT_SECRET,
+      callbackURL: envVars.GOOGLE_CALLBACK_URL
+    }
   },
   email: {
     smtp: {
@@ -54,5 +64,9 @@ export default {
     turnstile: {
       secretKey: envVars.CLOUDFLARE_TURNSTILE_SECRET_KEY
     }
-  }
+  },
+  logs: {
+    level: process.env.LOG_LEVEL || 'silly',
+  },
+  allowedOrigins: ['http://localhost:3000', 'https://okdm.me']
 };

@@ -9,6 +9,159 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String       @id @default(cuid())
+  username        String       @unique
+  email           String       @unique
+  phone           String?      @unique
+  phoneExtension  String?
+  name            String?
+  provider        AuthProvider @default(LOCAL)
+  role            Role         @default(USER)
+  isEmailVerified Boolean      @default(false)
+  isPhoneVerified Boolean      @default(false)
+  isDeleted       Boolean      @default(false)
+  deletedAt       DateTime?
+  googleId        String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  Token           Token[]
+  UserProfile     UserProfile? // Contains public information about the user
+  Otp             Otp[]
+
+  @@index([email])
+  @@index([phone])
+}
+
+model UserProfile {
+  id                   Int              @id @default(autoincrement())
+  userId               String           @unique
+  profile_url          String?          @unique
+  headline             String?
+  bio                  String?
+  avatar               String?
+  location             String?
+  website              String?
+  designation          UserDesignation?
+  // Location of the designation, eg: Company name, School name, etc.
+  designation_location String?
+  User                 User             @relation(fields: [userId], references: [id])
+  UserLinks            UserLinks[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model UserLinks {
+  id          Int           @id @default(autoincrement())
+  userId      String
+  type        UserLinksType
+  isVisible   Boolean       @default(true)
+  displayType DisplayType   @default(LINK)
+  link        String
+  UserProfile UserProfile   @relation(fields: [userId], references: [userId])
+
+  @@index([userId])
+  @@index([isVisible])
+}
+
+model Otp {
+  id        Int       @id @default(autoincrement())
+  otp       String
+  type      OTPType
+  isUsed    Boolean   @default(false)
+  expires   DateTime
+  User      User?     @relation(fields: [userId], references: [id])
+  userId    String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Token {
+  id        Int      @id @default(autoincrement())
+  token     String
+  type      TokenType
+  expires   DateTime
+  User      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum UserDesignation {
+  STUDENT
+  SOFTWARE_ENGINEER
+  FRONTEND_ENGINEER
+  BACKEND_ENGINEER
+  FULLSTACK_ENGINEER
+  DEVOPS_ENGINEER
+  DESIGNER
+  PRODUCT_MANAGER
+  MARKETING
+  SALES
+  HR
+  FINANCE
+  RECRUITER
+  FREELANCER
+  ENTREPRENEUR
+  INVESTOR
+  CONTENT_CREATOR
+  INFLUENCER
+  BLOGGER
+  TEACHER
+  OTHER
+}
+
+enum OTPType {
+  EMAIL
+  PHONE
+}
+
+enum DisplayType {
+  ICON
+  TEXT
+  LINK
+  BUTTON
+  EMBED
+  OTHER
+}
+
+enum TokenType {
+  ACCESS
+  REFRESH
+  RESET_PASSWORD
+  VERIFY_EMAIL
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+  GITHUB
+}
+
+enum UserLinksType {
+  GITHUB
+  LINKEDIN
+  X
+  FACEBOOK
+  INSTAGRAM
+  WEBSITE
+  TIKTOK
+  YOUTUBE
+  SPOTIFY
+  APPLE_MUSIC
+  BLOG
+  CUSTOM_BUTTON
+  OTHER
 }
