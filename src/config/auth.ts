@@ -2,11 +2,11 @@
 import { Strategy as JwtStrategy, ExtractJwt, VerifyCallback } from 'passport-jwt';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
 import { Strategy as LocalStrategy } from 'passport-local';
-import { AuthProvider, OTPType, TokenType } from '@prisma/client';
+import { AuthProvider, OTPType } from '@prisma/client';
 import { config } from './config';
 import prisma from './db';
 import passport from 'passport';
-import { userService } from '../services/user';
+import { userService } from '../services/user.service';
 import logger from './logger';
 
 const jwtOptions = {
@@ -16,10 +16,7 @@ const jwtOptions = {
 
 const jwtVerify: VerifyCallback = async (payload, done) => {
     try {
-        if (payload.type !== TokenType.ACCESS) {
-            throw new Error("Invalid token type");
-        }
-
+        
         const user = await prisma.user.findUnique({
             where: {
                 id: payload.sub
@@ -65,6 +62,33 @@ export const googleStrategy = new GoogleStrategy(googleOptions, async (accessTok
         return done(error, false);
     }
 });
+
+// Uses Email + Email OTP
+export const localStrategy = new LocalStrategy(async (username, password, done) => {
+    try {
+        const user = await userService.getUserByUsername(username);
+        if (!user) {
+            return done(null, false);
+        }
+        if (user.provider !== AuthProvider.LOCAL) {
+            return done(null, false);
+        }
+        if (user.isDeleted) {
+            return done(null, false);
+        }
+        if (!user.isEmailVerified) {
+            return done(null, false);
+        }
+        const isValid = await userService.verifyOTP(password, user.id, OTPType.EMAIL_LOGIN);
+        if (!isValid) {
+            return done(null, false);
+        }
+        return done(null, user);
+    } catch (error) {
+        return done(error, false);
+    }
+})
+
 
 passport.use(jwtStrategy);
 passport.use(googleStrategy);

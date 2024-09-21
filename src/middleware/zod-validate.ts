@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { z } from "zod";
-import pick from "../utils/pick";
+import pick from "../utils/pick.util";
 import httpStatus from "http-status";
 
 const validate = (schema: z.ZodType) => (req: Request, res: Response, next: NextFunction) => {

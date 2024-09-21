@@ -2,12 +2,12 @@
 
 import { Profile } from "passport-google-oauth20"
 import prisma from "../config/db"
-import { AuthProvider, TokenType } from "@prisma/client";
-import { generateFakeUsername } from "../utils/faker";
+import { AuthProvider, OTPType } from "@prisma/client";
+import { generateFakeUsername } from "../utils/faker.util";
 import logger from "../config/logger";
 
 const getOrCreateGoogleUser = async (accessToken: string, refreshToken: string, profile: Profile) => {
-    const tokenType = TokenType.ACCESS;
+
     logger.info("Getting or creating user from google profile", profile);
     const user = await prisma.user.findUnique({
         where: {
@@ -38,19 +38,13 @@ const getOrCreateGoogleUser = async (accessToken: string, refreshToken: string, 
                 isEmailVerified: true,
                 name: profile.displayName!,
                 provider: AuthProvider.GOOGLE,
-                UserProfile: {
-                    connectOrCreate: {
-                        where: {
-                            userId: user!.id
-                        },
-                        create: {
-                            avatar: profile.photos![0].value,
-                        }
-                    }
-                }
-            },
-            include: {
-                UserProfile: true
+                googleId: profile.id,
+            }
+        });
+        const newProfile = await prisma.userProfile.create({
+            data: {
+                avatar: profile.photos![0].value,
+                userId: newUser.id
             }
         });
 
@@ -62,8 +56,7 @@ const getOrCreateGoogleUser = async (accessToken: string, refreshToken: string, 
             isEmailVerified: newUser.isEmailVerified,
             email: newUser.email,
             provider: newUser.provider,
-            avatar: newUser.UserProfile?.avatar,
-            type: tokenType
+            avatar: newProfile.avatar
         }
     }
     if (user && user.provider !== AuthProvider.GOOGLE) {
@@ -77,8 +70,7 @@ const getOrCreateGoogleUser = async (accessToken: string, refreshToken: string, 
         isEmailVerified: user.isEmailVerified,
         email: user.email,
         provider: user.provider,
-        avatar: user.UserProfile?.avatar,
-        type: tokenType
+        avatar: user.UserProfile?.avatar
     };
 }
 
@@ -105,7 +97,67 @@ const getUserById = async (id: string) => {
     return dbUser;
 }
 
+const getUserByUsername = async (username: string) => {
+    logger.info("Getting user by username", username);
+    const dbUser = await prisma.user.findUnique({
+        where: {
+            username: username
+        },
+        select: {
+            id: true,
+            username: true,
+            isDeleted: true,
+            isPhoneVerified: true,
+            isEmailVerified: true,
+            email: true,
+            provider: true,
+            UserProfile: {
+                select: {
+                    avatar: true
+                }
+            }
+        }
+    });
+    return dbUser;
+}
+
+// For verifying OTP loggin purposes
+const verifyOTP = async (otp: string, userId: string, type: OTPType) => {
+    //Takes OTP and user id and verifies the OTP
+    logger.info("Verifying OTP", otp, userId, type);
+    const otpRecord = await prisma.otp.findFirst({
+        where: {
+            userId: userId,
+            type: type
+        }
+    });
+    if (!otpRecord) {
+        return false;
+    }
+    if (otpRecord.otp !== otp) {
+        return false;
+    }
+    // Set OTP as used and user as verified
+    await prisma.otp.update({
+        where: {
+            id: otpRecord.id
+        },
+        data: {
+            isUsed: true
+        }
+    });
+
+    return true;
+}
+
+async function verifyPhone(phone: string, otp: string) {
+
+}
+
 export const userService = {
     getOrCreateGoogleUser,
-    getUserById
+    getUserById,
+    getUserByUsername,
+    verifyOTP,
+    verifyPhone
 }

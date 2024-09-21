@@ -29,7 +29,6 @@ model User {
   googleId        String?
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
-  Token           Token[]
   UserProfile     UserProfile? // Contains public information about the user
   Otp             Otp[]
 
@@ -83,24 +82,9 @@ model Otp {
   updatedAt DateTime  @updatedAt
 }
 
-model Token {
-  id        Int      @id @default(autoincrement())
-  token     String
-  type      TokenType
-  expires   DateTime
-  User      User?    @relation(fields: [userId], references: [id])
-  userId    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
 enum UserDesignation {
   STUDENT
-  SOFTWARE_ENGINEER
-  FRONTEND_ENGINEER
-  BACKEND_ENGINEER
-  FULLSTACK_ENGINEER
-  DEVOPS_ENGINEER
+  ENGINEER
   DESIGNER
   PRODUCT_MANAGER
   MARKETING
@@ -119,8 +103,10 @@ enum UserDesignation {
 }
 
 enum OTPType {
-  EMAIL
-  PHONE
+  EMAIL_LOGIN
+  PHONE_LOGIN
+  EMAIL_VERIFICATION
+  PHONE_VERIFICATION
 }
 
 enum DisplayType {

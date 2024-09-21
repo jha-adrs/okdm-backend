@@ -1,8 +1,11 @@
 //Sample Logger
 import winston from 'winston';
-import config from "./config";
+import { config } from "./config";
+import { Logtail } from '@logtail/node';
+import { LogtailTransport } from '@logtail/winston';
 const env = config.env;
 const isLocal = env === 'development';
+const lotail = new Logtail(config.api_keys.logtail)
 
 const levels = {
     error: 0,
@@ -54,16 +57,17 @@ const customFormat = winston.format.printf((info) => {
 const format = winston.format.combine(
     winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
     isLocal
-        ? winston.format.colorize({ level: true })
+        ? winston.format.colorize({ all: true })
         : winston.format.uncolorize(),
     customFormat,
 );
 
-const transports = [
+const transports: any = [
     new winston.transports.Console(),
-    //new winston.transports.File({ filename: 'logs/error.log', level: 'error' }),
-    //new winston.transports.File({ filename: 'logs/combined.log' }),
 ];
+if (!isLocal) {
+    transports.push(new LogtailTransport(lotail))
+}
 
 const logger = winston.createLogger({
     level: level(),
@@ -71,5 +75,6 @@ const logger = winston.createLogger({
     format,
     transports,
 });
+
 
 export default logger;

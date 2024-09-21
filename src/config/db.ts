@@ -21,14 +21,14 @@ prisma.$connect().then(() => {
     logger.info("Connected to the database");
 });
 prisma.$on('query', (e) => {
-    logger.verbose(`Query: ${e.query}`)
+    logger.debug(`Query: ${e.query}`, "time:", e.duration, "ms")
 })
 prisma.$on('warn', (e) => {
-    logger.warn("Prisma Warning", e.message, e.message, e.target)
+    logger.warn("Prisma Warning", e.message, e.target)
 })
 
 prisma.$on('info', (e) => {
-    logger.info("Prisma Info", e.message, e.message)
+    logger.info("Prisma Info", e.message)
 })
 
 prisma.$on('error', (e) => {

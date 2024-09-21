@@ -6,15 +6,15 @@ import { z } from 'zod';
 dotenv.config({ path: path.join(process.cwd(), '.env') });
 
 const envVarsSchema = z.object({
-  NODE_ENV: z.enum(['production', 'development', 'test']),
-  PORT: z.number().default(3000),
+  NODE_ENV: z.enum(['production', 'development', 'test']).default('development'),
+  PORT: z.coerce.number().default(3000),
   JWT_SECRET: z.string(),
-  JWT_ACCESS_EXPIRATION_MINUTES: z.number().default(30),
-  JWT_REFRESH_EXPIRATION_DAYS: z.number().default(30),
-  JWT_RESET_PASSWORD_EXPIRATION_MINUTES: z.number().default(10),
-  JWT_VERIFY_EMAIL_EXPIRATION_MINUTES: z.number().default(10),
+  JWT_ACCESS_EXPIRATION_MINUTES: z.coerce.number().default(30),
+  JWT_REFRESH_EXPIRATION_DAYS: z.coerce.number().default(30),
+  JWT_RESET_PASSWORD_EXPIRATION_MINUTES: z.coerce.number().default(10),
+  JWT_VERIFY_EMAIL_EXPIRATION_MINUTES: z.coerce.number().default(10),
   SMTP_HOST: z.string(),
-  SMTP_PORT: z.number(),
+  SMTP_PORT: z.coerce.number(),
   SMTP_USERNAME: z.string(),
   SMTP_PASSWORD: z.string(),
   EMAIL_FROM: z.string(),
@@ -24,14 +24,21 @@ const envVarsSchema = z.object({
   GOOGLE_CLIENT_ID: z.string(),
   GOOGLE_CLIENT_SECRET: z.string(),
   GOOGLE_CALLBACK_URL: z.string(),
+  REDIS_URL: z.string(),
+  LOGTAIL_API_KEY: z.string(),
 })
 
-const envVars = envVarsSchema.parse(process.env);
-
+const parsedSchema = envVarsSchema.safeParse(process.env);
+if (parsedSchema.success === false) {
+  console.error(parsedSchema.error.errors);
+  process.exit(1);
+}
+const envVars = parsedSchema.data;
 export const config = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
   serverUrl: envVars.SERVER_URL,
+  redisUrl: envVars.REDIS_URL,
   jwt: {
     secret: envVars.JWT_SECRET,
     accessExpirationMinutes: envVars.JWT_ACCESS_EXPIRATION_MINUTES,
@@ -39,8 +46,8 @@ export const config = {
     resetPasswordExpirationMinutes: envVars.JWT_RESET_PASSWORD_EXPIRATION_MINUTES,
     verifyEmailExpirationMinutes: envVars.JWT_VERIFY_EMAIL_EXPIRATION_MINUTES
   },
-  oauth:{
-    google:{
+  oauth: {
+    google: {
       clientId: envVars.GOOGLE_CLIENT_ID,
       clientSecret: envVars.GOOGLE_CLIENT_SECRET,
       callbackURL: envVars.GOOGLE_CALLBACK_URL
@@ -58,7 +65,8 @@ export const config = {
     from: envVars.EMAIL_FROM
   },
   api_keys: {
-    fast2sms: envVars.FAST2SMS_API_KEY
+    fast2sms: envVars.FAST2SMS_API_KEY,
+    logtail: envVars.LOGTAIL_API_KEY
   },
   cloudflare: {
     turnstile: {
