@@ -76,5 +76,6 @@ export const config = {
   logs: {
     level: process.env.LOG_LEVEL || 'silly',
   },
-  allowedOrigins: ['http://localhost:3000', 'https://okdm.me']
+  allowedOrigins: ['http://localhost:3000', 'https://okdm.me'],
+  
 };

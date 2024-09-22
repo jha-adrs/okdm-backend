@@ -6,6 +6,79 @@ import { AuthProvider, OTPType } from "@prisma/client";
 import { generateFakeUsername } from "../utils/faker.util";
 import logger from "../config/logger";
 
+const isUsernameTaken = async (username: string) => {
+    const user = await prisma.user.findFirst({
+        where: {
+            username: username
+        },
+        select: {
+            username: true
+        }
+    });
+    return !!user;
+}
+
+const isEmailTaken = async (email: string) => {
+    const user = await prisma.user.findFirst({
+        where: {
+            email: email
+        },
+        select: {
+            email: true
+        }
+    });
+    return !!user;
+}
+
+const isEmailVerified = async (email: string) => {
+    const user = await prisma.user.findFirst({
+        where: {
+            email: email
+        },
+        select: {
+            isEmailVerified: true
+        }
+    });
+    return user?.isEmailVerified;
+}
+
+const isPhoneTaken = async (phone: string) => {
+    const user = await prisma.user.findFirst({
+        where: {
+            phone: phone
+        },
+        select: {
+            phone: true
+        }
+    });
+    return !!user;
+}
+
+const isPhoneVerified = async (phone: string) => {
+    const user = await prisma.user.findFirst({
+        where: {
+            phone: phone
+        },
+        select: {
+            isPhoneVerified: true
+        }
+    });
+    return user?.isPhoneVerified;
+}
+
+const registerUser = (name: string, email: string, username: string) => {
+    // Register a new user
+    const user = prisma.user.create({
+        data: {
+            name: name,
+            email: email,
+            username: username,
+            provider: AuthProvider.LOCAL
+        }
+    });
+    return user;
+}
+
 const getOrCreateGoogleUser = async (accessToken: string, refreshToken: string, profile: Profile) => {
 
     logger.info("Getting or creating user from google profile", profile);
@@ -121,6 +194,56 @@ const getUserByUsername = async (username: string) => {
     return dbUser;
 }
 
+const getUserByEmail = async (email: string) => {
+    logger.info("Getting user by email", email);
+    const dbUser = await prisma.user.findUnique({
+        where: {
+            email: email
+        },
+        select: {
+            id: true,
+            username: true,
+            isDeleted: true,
+            isPhoneVerified: true,
+            isEmailVerified: true,
+            email: true,
+            provider: true,
+            UserProfile: {
+                select: {
+                    avatar: true
+                }
+            }
+        }
+    });
+    return dbUser;
+}
+
+const getUserByPhone = async (phone: string) => {
+    logger.info("Getting user by phone", phone);
+    const dbUser = await prisma.user.findUnique({
+        where: {
+            phone: phone
+        },
+        select: {
+            id: true,
+            username: true,
+            isDeleted: true,
+            isPhoneVerified: true,
+            isEmailVerified: true,
+            phone: true,
+            phoneExtension: true,
+            email: true,
+            provider: true,
+            UserProfile: {
+                select: {
+                    avatar: true
+                }
+            }
+        }
+    });
+    return dbUser;
+}
+
 // For verifying OTP loggin purposes
 const verifyOTP = async (otp: string, userId: string, type: OTPType) => {
     //Takes OTP and user id and verifies the OTP
@@ -150,14 +273,23 @@ const verifyOTP = async (otp: string, userId: string, type: OTPType) => {
     return true;
 }
 
+
 async function verifyPhone(phone: string, otp: string) {
 
 }
 
 export const userService = {
+    isUsernameTaken,
+    isEmailTaken,
+    isPhoneTaken,
+    registerUser,
     getOrCreateGoogleUser,
     getUserById,
     getUserByUsername,
+    getUserByEmail,
     verifyOTP,
-    verifyPhone
+    verifyPhone,
+    isEmailVerified,
+    isPhoneVerified,
+    getUserByPhone
 }

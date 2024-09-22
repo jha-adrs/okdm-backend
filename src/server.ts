@@ -13,10 +13,11 @@ import "./config/auth" //Passport strategies
 import "./config/db" //Prisma client connection
 //Routes
 import authRoutes from './routes/v1/auth.routes';
-import userRoutes from './routes/v1/user.routes';
+import profileRoutes from './routes/v1/profile.routes';
 import morgan from './middleware/morgan';
 import errorHandler from './middleware/error-handler';
 import logger from './config/logger';
+import rateLimiter from './middleware/rate-limiter';
 const app = express()
 
 app.use(express.json())
@@ -34,9 +35,9 @@ const client = createClient({
     url: config.redisUrl
 });
 client.connect()
-client.on("error", function(error) {
+client.on("error", function (error) {
     console.error(error);
- });
+});
 const redisStore = new RedisStore({
     client,
     prefix: "okdm:"
@@ -53,8 +54,11 @@ app.use(passport.session())
 app.use(morgan.successHandler)
 app.use(morgan.errorHandler)
 
-app.use("/v1/auth", authRoutes);
-app.use("/v1/user", userRoutes);
+app.use("/v1/auth", rateLimiter.authRateLimiterMiddleware, authRoutes);
+
+app.use(rateLimiter.otherRouteRateLimiterMiddleware) //Rate limiter for all other routes
+app.use("/v1/profile", profileRoutes);
+
 app.use((req, res) => {
     res.status(httpStatus.NOT_FOUND).send("Not Found")
 });

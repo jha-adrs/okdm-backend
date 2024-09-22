@@ -16,7 +16,7 @@ const jwtOptions = {
 
 const jwtVerify: VerifyCallback = async (payload, done) => {
     try {
-        
+
         const user = await prisma.user.findUnique({
             where: {
                 id: payload.sub
@@ -64,25 +64,31 @@ export const googleStrategy = new GoogleStrategy(googleOptions, async (accessTok
 });
 
 // Uses Email + Email OTP
-export const localStrategy = new LocalStrategy(async (username, password, done) => {
+export const localStrategy = new LocalStrategy({
+    usernameField: 'username',
+    passwordField: 'password',
+    passReqToCallback: true
+}, async (req, email, password, done) => {
     try {
-        const user = await userService.getUserByUsername(username);
+        logger.info("Local strategy", email, password, req.body);
+        const user = await userService.getUserByEmail(email);
         if (!user) {
+            logger.info("User not found", email);
             return done(null, false);
         }
         if (user.provider !== AuthProvider.LOCAL) {
+            logger.info("User's provider is not local", user.provider);
             return done(null, false);
         }
         if (user.isDeleted) {
+            logger.info("User is deleted", user);
             return done(null, false);
         }
-        if (!user.isEmailVerified) {
-            return done(null, false);
-        }
-        const isValid = await userService.verifyOTP(password, user.id, OTPType.EMAIL_LOGIN);
-        if (!isValid) {
-            return done(null, false);
-        }
+        // const isValid = await userService.verifyOTP(password, user.id, OTPType.EMAIL_LOGIN);
+        // if (!isValid) {
+        //     logger.info("OTP is not valid", email, password);
+        //     return done(null, false);
+        // }
         return done(null, user);
     } catch (error) {
         return done(error, false);
@@ -92,6 +98,8 @@ export const localStrategy = new LocalStrategy(async (username, password, done) 
 
 passport.use(jwtStrategy);
 passport.use(googleStrategy);
+passport.use("local", localStrategy);
+
 passport.serializeUser((user, next) => {
     next(null, user);
 })
