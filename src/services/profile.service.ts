@@ -25,5 +25,25 @@ export const profileService = {
             }
         });
         return profile
+    },
+    getMyProfile: async (userID: string) => {
+        // Private route
+        const profile = await prisma.userProfile.findFirst({
+            where: {
+                userId: userID
+            },
+            select: {
+                profile_url: true,
+                headline: true,
+                bio: true,
+                avatar: true,
+                location: true,
+                website: true,
+                designation: true,
+                designation_location: true,
+                UserLinks: true
+            }
+        });
+        return profile
     }
 }

@@ -1,3 +1,5 @@
+// Types from src/types/index.d.ts
+/// <reference path="./types/index.d.ts" />
 import express from 'express';
 import helmet from 'helmet';
 import compression from 'compression';

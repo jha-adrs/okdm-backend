@@ -1,6 +1,8 @@
 import randomstring from 'randomstring'
 import prisma from '../config/db'
 import { OTPType } from '@prisma/client'
+import { sendEmail } from '../utils/mail.util'
+import { sendSMSOTP } from '../utils/phone.util'
 
 const generateOTP = () => {
     return randomstring.generate({
@@ -20,6 +22,7 @@ const sendEmailOTP = async (email: string, userID: string, type: OTPType) => {
             type
         }
     });
+    // Add check for existing OTP, and limit the number of OTPs sent
     if (existingOTP) {
         await prisma.otp.delete({
             where: {
@@ -36,7 +39,7 @@ const sendEmailOTP = async (email: string, userID: string, type: OTPType) => {
             expires: new Date(Date.now() + 1000 * 60 * 20) // 5 minutes
         }
     });
-
+    await sendEmail(email, "OTP for email verification", `Your OTP is ${otp}`);
     return otp;
 
 }
@@ -69,6 +72,7 @@ const sendPhoneOTP = async (phone: string, otp: string) => {
             expires: new Date(Date.now() + 1000 * 60 * 5) // 5 minutes
         }
     });
+    await sendSMSOTP(phone, otp);
     return otp;
 }
 

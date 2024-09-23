@@ -46,7 +46,6 @@ model UserProfile {
   location             String?
   website              String?
   designation          UserDesignation?
-  // Location of the designation, eg: Company name, School name, etc.
   designation_location String?
   User                 User             @relation(fields: [userId], references: [id])
   UserLinks            UserLinks[]
@@ -69,6 +68,7 @@ model UserLinks {
   @@index([userId])
   @@index([isVisible])
 }
+
 
 model Otp {
   id        Int       @id @default(autoincrement())

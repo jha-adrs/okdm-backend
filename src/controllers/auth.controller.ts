@@ -18,12 +18,16 @@ const registerUser = async (req: Request, res: Response) => {
         } } = await authValidator.registerUserSchema.parseAsync(req)
         const isUsernameTaken = await userService.isUsernameTaken(username)
         if (isUsernameTaken) {
-            res.status(httpStatus.BAD_REQUEST).send("Username is already taken")
+            res.status(httpStatus.BAD_REQUEST).send({
+                message: "An account with this username already exists"
+            })
             return
         }
         const isEmailTaken = await userService.isEmailTaken(email);
         if (isEmailTaken) {
-            res.status(httpStatus.BAD_REQUEST).send("Email is already taken")
+            res.status(httpStatus.BAD_REQUEST).send({
+                message: "An account with this email already exists"
+            })
             return
         }
         const user = await userService.registerUser(name, email, username);
@@ -57,14 +61,18 @@ const verifyEmail = async (req: Request, res: Response) => {
         if (!otpRecord) {
             return res.status(httpStatus.UNAUTHORIZED).send("Invalid OTP")
         }
+        const updatedUser = await userService.getUserByEmail(email);
+        if (!updatedUser) {
+            return res.status(httpStatus.NOT_FOUND).send("User not found")
+        }
         // Log user in
-        req.login(user, (err) => {
+        req.login(updatedUser, (err) => {
             if (err) {
                 return res.status(httpStatus.INTERNAL_SERVER_ERROR).send("Error logging in")
             }
             return res.status(httpStatus.OK).json({
                 message: "Email verified",
-                data: user
+                data: updatedUser
             })
         });
     } catch (error) {
@@ -169,10 +177,26 @@ const sendOTP = async (req: Request, res: Response) => {
     }
 }
 
+const logoutUser = async (req: Request, res: Response) => {
+    try {
+        req.logOut((err) => {
+            if (err) {
+                return res.status(httpStatus.INTERNAL_SERVER_ERROR).send("Error logging out")
+            }
+            return res.status(httpStatus.OK).send("Logged out")
+        })
+        return res.status(httpStatus.OK).send("Logged out")
+    } catch (error) {
+        logger.error(error)
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).send("Error logging out")
+    }
+}
+
 export const authController = {
     registerUser,
     verifyEmail,
     loginUser,
     verifyPhone,
-    sendOTP
+    sendOTP,
+    logoutUser
 }

@@ -2,7 +2,7 @@
 import { Strategy as JwtStrategy, ExtractJwt, VerifyCallback } from 'passport-jwt';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'
 import { Strategy as LocalStrategy } from 'passport-local';
-import { AuthProvider, OTPType } from '@prisma/client';
+import { AuthProvider, OTPType, User } from '@prisma/client';
 import { config } from './config';
 import prisma from './db';
 import passport from 'passport';
@@ -101,7 +101,7 @@ passport.use(googleStrategy);
 passport.use("local", localStrategy);
 
 passport.serializeUser((user, next) => {
-    next(null, user);
+    next(null, user as User);
 })
 passport.deserializeUser(async (user: any, next) => {
     // Find user by id

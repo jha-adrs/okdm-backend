@@ -27,5 +27,28 @@ export const profileController = {
                 message: "Internal server error"
             })
         }
+    },
+    getMyProfile: async (req: Request, res: Response) => {
+        try {
+            const user = req.user;
+            if (!user) {
+                return res.status(httpStatus.UNAUTHORIZED).json({
+                    message: "Unauthorized"
+                })
+            }
+            logger.info("User", user.id);
+            const userInfo = await userService.getUserById(user.id);
+            const profile = await profileService.getMyProfile(user.id);
+            return res.status(httpStatus.OK).json({
+                user: userInfo,
+                profile
+            })
+        }
+        catch (error) {
+            logger.error("ERROR IN PROFILE CONTROLLER, Get My Profile", error);
+            return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+                message: "Internal server error"
+            })
+        }
     }
 }
