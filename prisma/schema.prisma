@@ -31,6 +31,7 @@ model User {
   updatedAt       DateTime     @updatedAt
   UserProfile     UserProfile? // Contains public information about the user
   Otp             Otp[]
+  Chats           Chats[]      @relation("Initiator")
 
   @@index([email])
   @@index([phone])
@@ -69,17 +70,34 @@ model UserLinks {
   @@index([isVisible])
 }
 
+model Chats {
+  id         Int        @id @default(autoincrement())
+  intiatorId String // User ID of the initiator
+  status     ChatStatus @default(PENDING)
+  
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+
+  InitiatorUser User @relation("Initiator", fields: [intiatorId], references: [id])
+}
 
 model Otp {
-  id        Int       @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   otp       String
   type      OTPType
-  isUsed    Boolean   @default(false)
+  isUsed    Boolean  @default(false)
   expires   DateTime
-  User      User?     @relation(fields: [userId], references: [id])
+  User      User?    @relation(fields: [userId], references: [id])
   userId    String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ChatStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  BLOCKED
 }
 
 enum UserDesignation {

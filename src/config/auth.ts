@@ -55,6 +55,7 @@ export const googleStrategy = new GoogleStrategy(googleOptions, async (accessTok
     try {
         const user = await userService.getOrCreateGoogleUser(accessToken, refreshToken, profile);
         if (!user) {
+            logger.warn("User not found")
             return done(null, false);
         }
         return done(null, user);

@@ -27,7 +27,8 @@ app.use(express.urlencoded({ extended: true }))
 app.use(helmet())
 app.use(compression())
 app.use(cors({
-    origin: config.allowedOrigins
+    origin: config.allowedOrigins,
+    credentials: true
 }))
 // Allow preflight
 app.options('*', cors());
@@ -50,6 +51,9 @@ app.use(expressSession({
     resave: false,
     saveUninitialized: false,
     store: redisStore,
+    cookie:{
+        secure: config.env === "production",
+    }
 }))
 app.use(passport.initialize())
 app.use(passport.session())

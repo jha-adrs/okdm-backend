@@ -7,6 +7,7 @@ import { authService } from "../services/auth.service"
 import { OTPType } from "@prisma/client"
 import logger from "../config/logger"
 import httpStatus from "http-status"
+import { config } from "../config/config"
 
 const registerUser = async (req: Request, res: Response) => {
     try {
@@ -179,16 +180,60 @@ const sendOTP = async (req: Request, res: Response) => {
 
 const logoutUser = async (req: Request, res: Response) => {
     try {
+        logger.info("Logging out user", req.user?.id)
         req.logOut((err) => {
             if (err) {
                 return res.status(httpStatus.INTERNAL_SERVER_ERROR).send("Error logging out")
             }
-            return res.status(httpStatus.OK).send("Logged out")
+            return res.redirect(config.clientUrl)
         })
-        return res.status(httpStatus.OK).send("Logged out")
+        
     } catch (error) {
         logger.error(error)
         return res.status(httpStatus.INTERNAL_SERVER_ERROR).send("Error logging out")
+    }
+}
+
+const isUsernameTaken = async (req: Request, res: Response) => {
+    try {
+        const { query: {
+            username
+        } } = req
+        if (!username || typeof username !== "string") {
+            return res.status(httpStatus.BAD_REQUEST).send("Username is required")
+        }
+        const isUsernameTaken = await userService.isUsernameTaken(username as string)
+        return res.status(httpStatus.OK).json({
+            data: isUsernameTaken
+        })
+    } catch (error) {
+        logger.error(error)
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).send("Error checking username")
+    }
+}
+
+const loginSuccess = async (req: Request, res: Response) => {
+    try {
+        if (!req.user) {
+            logger.info("User not logged in")
+            return res.status(httpStatus.UNAUTHORIZED).json({
+                message: "User not logged in"
+            })
+        }
+        logger.info("User logged in", req.user)
+        const user = await userService.getUserById(req.user.id);
+        if (!user) {
+            return res.status(httpStatus.NOT_FOUND).json({
+                message: "User not found"
+            })
+        }
+        return res.status(httpStatus.OK).json({
+            message: "Logged in",
+            data: user
+        })
+    } catch (error) {
+        logger.error("Error in login/success", error)
+        res.status(httpStatus.INTERNAL_SERVER_ERROR).send("Error in login/success")
     }
 }
 
@@ -198,5 +243,7 @@ export const authController = {
     loginUser,
     verifyPhone,
     sendOTP,
-    logoutUser
+    logoutUser,
+    isUsernameTaken,
+    loginSuccess
 }

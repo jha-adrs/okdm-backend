@@ -20,7 +20,8 @@ const envVarsSchema = z.object({
   EMAIL_FROM: z.string(),
   FAST2SMS_API_KEY: z.string(),
   CLOUDFLARE_TURNSTILE_SECRET_KEY: z.string(),
-  SERVER_URL: z.string().default('http://localhost:3000'),
+  SERVER_URL: z.string().default('http://localhost:4000'),
+  CLIENT_URL: z.string().default('http://localhost:3000'),
   GOOGLE_CLIENT_ID: z.string(),
   GOOGLE_CLIENT_SECRET: z.string(),
   GOOGLE_CALLBACK_URL: z.string(),
@@ -38,6 +39,7 @@ export const config = {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
   serverUrl: envVars.SERVER_URL,
+  clientUrl: envVars.CLIENT_URL,
   redisUrl: envVars.REDIS_URL,
   jwt: {
     secret: envVars.JWT_SECRET,
@@ -76,6 +78,6 @@ export const config = {
   logs: {
     level: process.env.LOG_LEVEL || 'silly',
   },
-  allowedOrigins: ['http://localhost:3000', 'https://okdm.me'],
+  allowedOrigins: ['http://localhost:3000','http://localhost:4000', 'https://okdm.me'],
   
 };
