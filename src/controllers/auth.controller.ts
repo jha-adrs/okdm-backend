@@ -19,14 +19,14 @@ const registerUser = async (req: Request, res: Response) => {
         } } = await authValidator.registerUserSchema.parseAsync(req)
         const isUsernameTaken = await userService.isUsernameTaken(username)
         if (isUsernameTaken) {
-            res.status(httpStatus.BAD_REQUEST).send({
+            res.status(httpStatus.CONFLICT).send({
                 message: "An account with this username already exists"
             })
             return
         }
         const isEmailTaken = await userService.isEmailTaken(email);
         if (isEmailTaken) {
-            res.status(httpStatus.BAD_REQUEST).send({
+            res.status(httpStatus.CONFLICT).send({
                 message: "An account with this email already exists"
             })
             return
@@ -38,7 +38,7 @@ const registerUser = async (req: Request, res: Response) => {
             data: user
         })
     } catch (error) {
-        logger.error(error)
+        logger.error("ERROR IN REGISTER USER", error)
         return res.status(httpStatus.INTERNAL_SERVER_ERROR).send("Error registering user")
     }
 }
@@ -52,24 +52,34 @@ const verifyEmail = async (req: Request, res: Response) => {
         } } = await authValidator.verifyEmailSchema.parseAsync(req)
         const user = await userService.getUserByEmail(email);
         if (!user) {
-            return res.status(httpStatus.NOT_FOUND).send("User not found")
+            return res.status(httpStatus.NOT_FOUND).json({ message: "User not found" })
         }
         const isEmailVerified = await userService.isEmailVerified(email);
         if (isEmailVerified) {
-            return res.status(httpStatus.BAD_REQUEST).send("Email is already verified")
+            logger.info("Email is already verified")
+            return res.status(httpStatus.BAD_REQUEST).json({
+                message: "Email is already verified"
+            })
         }
         const otpRecord = await authService.verifyEmailOTP(email, otp, OTPType.EMAIL_VERIFICATION);
         if (!otpRecord) {
-            return res.status(httpStatus.UNAUTHORIZED).send("Invalid OTP")
+            return res.status(httpStatus.UNAUTHORIZED).json({
+                message: "Invalid OTP"
+            })
         }
         const updatedUser = await userService.getUserByEmail(email);
         if (!updatedUser) {
-            return res.status(httpStatus.NOT_FOUND).send("User not found")
+            return res.status(httpStatus.NOT_FOUND).json({
+                message: "User not found"
+            })
         }
         // Log user in
         req.login(updatedUser, (err) => {
             if (err) {
-                return res.status(httpStatus.INTERNAL_SERVER_ERROR).send("Error logging in")
+                logger.info("Error logging in", err)
+                return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+                    message: "Error logging in, please try again later"
+                })
             }
             return res.status(httpStatus.OK).json({
                 message: "Email verified",
@@ -78,7 +88,9 @@ const verifyEmail = async (req: Request, res: Response) => {
         });
     } catch (error) {
         logger.error(error)
-        return res.status(500).send("Error verifying email")
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+            message: "Error logging in, please try again later"
+        })
     }
 }
 
@@ -156,14 +168,27 @@ const sendOTP = async (req: Request, res: Response) => {
         // Logic for sending OTP
         const { body: {
             type,
-            value
+            value,
+            verification
         } } = await authValidator.sendOTPSchema.parseAsync(req)
         if (type === "email") {
             const user = await userService.getUserByEmail(value);
             if (!user) {
-                return res.status(httpStatus.NOT_FOUND).send("User not found")
+                return res.status(httpStatus.NOT_FOUND).json({
+                    message: "User not found"
+                })
             }
-            await authService.sendEmailOTP(value, user.id, OTPType.EMAIL_LOGIN);
+            if (verification === "register") {
+                const isVerified = await userService.isEmailVerified(value);
+                if (isVerified) {
+                    return res.status(httpStatus.CONFLICT).json({
+                        message: "Email is already verified"
+                    })
+                }
+                await authService.sendEmailOTP(value, user.id, OTPType.EMAIL_VERIFICATION);
+            } else {
+                await authService.sendEmailOTP(value, user.id, OTPType.EMAIL_LOGIN);
+            }
             return res.status(httpStatus.OK).json({
                 message: "OTP sent to email",
                 data: user
@@ -187,7 +212,7 @@ const logoutUser = async (req: Request, res: Response) => {
             }
             return res.redirect(config.clientUrl)
         })
-        
+
     } catch (error) {
         logger.error(error)
         return res.status(httpStatus.INTERNAL_SERVER_ERROR).send("Error logging out")
@@ -237,6 +262,24 @@ const loginSuccess = async (req: Request, res: Response) => {
     }
 }
 
+const verifyToken = async (req: Request, res: Response) => {
+    try {
+        if (req.isAuthenticated()) {
+            return res.status(httpStatus.OK).json({
+                message: "Token is valid",
+                data: req.user
+            })
+        } else {
+            return res.status(httpStatus.UNAUTHORIZED).json({
+                message: "Token is invalid"
+            })
+        }
+    } catch (error) {
+        logger.error("Error in verifyToken", error)
+        return res.status(httpStatus.INTERNAL_SERVER_ERROR).send("Error verifying token")
+    }
+}
+
 export const authController = {
     registerUser,
     verifyEmail,
@@ -245,5 +288,6 @@ export const authController = {
     sendOTP,
     logoutUser,
     isUsernameTaken,
-    loginSuccess
+    loginSuccess,
+    verifyToken
 }

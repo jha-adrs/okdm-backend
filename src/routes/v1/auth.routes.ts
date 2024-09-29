@@ -18,4 +18,5 @@ router.post('/logout', authController.logoutUser)
 router.get("/google", passport.authenticate('google', { scope: ["profile", "email"] }))
 router.get('/google/callback', passport.authenticate('google', { successRedirect: `${config.clientUrl}/login/success`, failureRedirect: `${config.clientUrl}/login` }))
 
+router.get("/verify-token", authController.verifyToken);
 export default router;

@@ -32,7 +32,8 @@ const loginSchema = z.object({
 const sendOTPSchema = z.object({
     body: z.object({
         type: z.enum(["email", "phone"], { message: "Invalid type" }),
-        value: z.string({ message: "Email or Phone is required" }).email().or(z.string().length(10).trim())
+        value: z.string({ message: "Email or Phone is required" }).email().or(z.string().length(10).trim()),
+        verification: z.enum(["register", "login"], { message: "Invalid verification type"})
     })
 })
 

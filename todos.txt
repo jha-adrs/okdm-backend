@@ -1,0 +1,2 @@
+TODO: PROXY THE GOOGLE AVATAR from OWN S3
+TODO: Add max OTP in a given time

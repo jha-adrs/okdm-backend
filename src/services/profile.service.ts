@@ -9,7 +9,6 @@ export const profileService = {
             },
             select: {
                 profile_url: true,
-                userId: true,
                 headline: true,
                 bio: true,
                 avatar: true,
@@ -20,6 +19,13 @@ export const profileService = {
                 UserLinks: {
                     where: {
                         isVisible: true
+                    }
+                },
+                User: {
+                    select: {
+                        username: true,
+                        name: true,
+                        createdAt: true
                     }
                 }
             }
@@ -41,7 +47,8 @@ export const profileService = {
                 website: true,
                 designation: true,
                 designation_location: true,
-                UserLinks: true
+                UserLinks: true,
+                userId: false
             }
         });
         return profile
