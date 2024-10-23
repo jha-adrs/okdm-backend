@@ -66,14 +66,20 @@ const isPhoneVerified = async (phone: string) => {
     return user?.isPhoneVerified;
 }
 
-const registerUser = (name: string, email: string, username: string) => {
+const registerUser = async (name: string, email: string, username: string) => {
     // Register a new user
-    const user = prisma.user.create({
+    const user = await prisma.user.create({
         data: {
             name: name,
             email: email,
             username: username,
             provider: AuthProvider.LOCAL
+        }
+    });
+    // Create a new profile for the user
+    const profile = await prisma.userProfile.create({
+        data: {
+            userId: user.id
         }
     });
     return user;
@@ -94,11 +100,7 @@ const getOrCreateGoogleUser = async (accessToken: string, refreshToken: string, 
             isEmailVerified: true,
             email: true,
             provider: true,
-            UserProfile: {
-                select: {
-                    avatar: true
-                }
-            }
+            image: true,
         }
     });
     //Create user if not exists
@@ -107,16 +109,16 @@ const getOrCreateGoogleUser = async (accessToken: string, refreshToken: string, 
         const newUser = await prisma.user.create({
             data: {
                 email: profile.emails![0].value,
-                username: generateFakeUsername(profile.displayName!),
+                username: await generateFakeUsername(profile.emails![0].value),
                 isEmailVerified: true,
                 name: profile.displayName!,
                 provider: AuthProvider.GOOGLE,
                 googleId: profile.id,
+                image: profile.photos![0].value
             }
         });
         const newProfile = await prisma.userProfile.create({
             data: {
-                avatar: profile.photos![0].value,
                 userId: newUser.id
             }
         });
@@ -129,7 +131,7 @@ const getOrCreateGoogleUser = async (accessToken: string, refreshToken: string, 
             isEmailVerified: newUser.isEmailVerified,
             email: newUser.email,
             provider: newUser.provider,
-            avatar: newProfile.avatar
+            avatar: newUser.image
         }
     }
     if (user && user.provider !== AuthProvider.GOOGLE) {
@@ -143,7 +145,7 @@ const getOrCreateGoogleUser = async (accessToken: string, refreshToken: string, 
         isEmailVerified: user.isEmailVerified,
         email: user.email,
         provider: user.provider,
-        avatar: user.UserProfile?.avatar
+        avatar: user.image
     };
 }
 
@@ -160,11 +162,7 @@ const getUserById = async (id: string) => {
             isPhoneVerified: true,
             isEmailVerified: true,
             email: true,
-            UserProfile: {
-                select: {
-                    avatar: true
-                }
-            }
+            image: true,
         }
     });
     return dbUser;
@@ -184,11 +182,7 @@ const getUserByUsername = async (username: string) => {
             isEmailVerified: true,
             email: true,
             provider: true,
-            UserProfile: {
-                select: {
-                    avatar: true
-                }
-            }
+            image: true,
         }
     });
     return dbUser;
@@ -208,11 +202,7 @@ const getUserByEmail = async (email: string) => {
             isEmailVerified: true,
             email: true,
             provider: true,
-            UserProfile: {
-                select: {
-                    avatar: true
-                }
-            }
+            image: true,
         }
     });
     return dbUser;
@@ -234,11 +224,7 @@ const getUserByPhone = async (phone: string) => {
             phoneExtension: true,
             email: true,
             provider: true,
-            UserProfile: {
-                select: {
-                    avatar: true
-                }
-            }
+            image: true,
         }
     });
     return dbUser;
@@ -278,6 +264,7 @@ async function verifyPhone(phone: string, otp: string) {
 
 }
 
+
 export const userService = {
     isUsernameTaken,
     isEmailTaken,
@@ -291,5 +278,5 @@ export const userService = {
     verifyPhone,
     isEmailVerified,
     isPhoneVerified,
-    getUserByPhone
+    getUserByPhone,
 }

@@ -27,6 +27,17 @@ const envVarsSchema = z.object({
   GOOGLE_CALLBACK_URL: z.string(),
   REDIS_URL: z.string(),
   LOGTAIL_API_KEY: z.string(),
+  UNSPLASH_ACCESS_KEY: z.string(),
+  UNSPLASH_SECRET_KEY: z.string(),
+
+  AWS_S3_ACCESS_KEY: z.string(),
+  AWS_S3_SECRET_KEY: z.string(),
+  AWS_S3_BUCKET_NAME: z.string(),
+  AWS_S3_REGION: z.string(),
+
+  CLOUDINARY_CLOUD_NAME: z.string(),
+  CLOUDINARY_API_KEY: z.string(),
+  CLOUDINARY_API_SECRET: z.string(),
 })
 
 const parsedSchema = envVarsSchema.safeParse(process.env);
@@ -78,6 +89,16 @@ export const config = {
   logs: {
     level: process.env.LOG_LEVEL || 'silly',
   },
-  allowedOrigins: ['http://localhost:3000','http://localhost:4000', 'https://okdm.me'],
-  
+  allowedOrigins: ['http://localhost:3000', 'http://localhost:4000', 'https://okdm.me'],
+  s3: {
+    accessKey: envVars.AWS_S3_ACCESS_KEY,
+    secretKey: envVars.AWS_S3_SECRET_KEY,
+    bucketName: envVars.AWS_S3_BUCKET_NAME,
+    region: envVars.AWS_S3_REGION
+  },
+  cloudinary: {
+    cloudName: envVars.CLOUDINARY_CLOUD_NAME,
+    apiKey: envVars.CLOUDINARY_API_KEY,
+    apiSecret: envVars.CLOUDINARY_API_SECRET
+  },
 };

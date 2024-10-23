@@ -5,6 +5,7 @@ import httpStatus from "http-status";
 import { profileService } from "../services/profile.service";
 import logger from "../config/logger";
 
+
 export const profileController = {
     getPublicProfile: async (req: Request, res: Response) => {
         try {
@@ -46,6 +47,32 @@ export const profileController = {
         }
         catch (error) {
             logger.error("ERROR IN PROFILE CONTROLLER, Get My Profile", error);
+            return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+                message: "Internal server error"
+            })
+        }
+    },
+    updateAvatar: async (req: Request, res: Response) => {
+        try {
+            const user = req.user;
+            if (!user) {
+                return res.status(httpStatus.UNAUTHORIZED).json({
+                    message: "Unauthorized"
+                })
+            }
+            const file = req.file;
+            if (!file) {
+                return res.status(httpStatus.BAD_REQUEST).json({
+                    message: "Please upload an image"
+                })
+            }
+            logger.info("File", file.path, file.size);
+            const profile = await profileService.updateAvatar(user.id, file);
+            return res.status(httpStatus.OK).json({
+                profile
+            })
+        } catch (error) {
+            logger.error("ERROR IN PROFILE CONTROLLER, Update Avatar", error);
             return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
                 message: "Internal server error"
             })

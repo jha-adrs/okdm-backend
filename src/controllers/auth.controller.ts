@@ -8,6 +8,7 @@ import { OTPType } from "@prisma/client"
 import logger from "../config/logger"
 import httpStatus from "http-status"
 import { config } from "../config/config"
+import { profileService } from "../services/profile.service"
 
 const registerUser = async (req: Request, res: Response) => {
     try {
@@ -252,9 +253,11 @@ const loginSuccess = async (req: Request, res: Response) => {
                 message: "User not found"
             })
         }
+        const profile = await profileService.getMyProfile(user.id);
         return res.status(httpStatus.OK).json({
             message: "Logged in",
-            data: user
+            data: user,
+            profile
         })
     } catch (error) {
         logger.error("Error in login/success", error)

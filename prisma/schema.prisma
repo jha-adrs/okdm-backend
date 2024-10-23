@@ -20,6 +20,7 @@ model User {
   phone           String?      @unique
   phoneExtension  String?
   name            String?
+  image           String?
   provider        AuthProvider @default(LOCAL)
   role            Role         @default(USER)
   isEmailVerified Boolean      @default(false)
@@ -41,6 +42,7 @@ model UserProfile {
   id                   Int              @id @default(autoincrement())
   userId               String           @unique
   profile_url          String?          @unique
+  isPublic             Boolean          @default(false)
   headline             String?
   bio                  String?
   avatar               String?
@@ -64,7 +66,11 @@ model UserLinks {
   isVisible   Boolean       @default(true)
   displayType DisplayType   @default(LINK)
   link        String
+  text        String?
+  index       Int           @default(0)
   UserProfile UserProfile   @relation(fields: [userId], references: [userId])
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   @@index([userId])
   @@index([isVisible])
@@ -74,9 +80,9 @@ model Chats {
   id         Int        @id @default(autoincrement())
   intiatorId String // User ID of the initiator
   status     ChatStatus @default(PENDING)
-  
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   InitiatorUser User @relation("Initiator", fields: [intiatorId], references: [id])
 }
@@ -162,10 +168,13 @@ enum UserLinksType {
   INSTAGRAM
   WEBSITE
   TIKTOK
+  TWITCH
   YOUTUBE
   SPOTIFY
   APPLE_MUSIC
   BLOG
   CUSTOM_BUTTON
+  PORTFOLIO
+  TELEGRAM
   OTHER
 }
