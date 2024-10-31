@@ -77,5 +77,45 @@ export const profileController = {
                 message: "Internal server error"
             })
         }
+    },
+    updateTheme: async (req: Request, res: Response) => {
+        try {
+            const user = req.user;
+            if (!user) {
+                return res.status(httpStatus.UNAUTHORIZED).json({
+                    message: "Unauthorized"
+                })
+            }
+            const { body: {
+                theme
+            } } = req;
+            const profile = await profileService.updateTheme(user.id, theme);
+            return res.status(httpStatus.OK).json({
+                profile
+            })
+        } catch (error) {
+            logger.error("ERROR IN PROFILE CONTROLLER, Update Theme", error);
+            return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+                message: "Internal server error"
+            })
+        }
+    },
+    updateBackground: async (req: Request, res: Response) => {
+        try {
+            const { value, type } = req.body;
+            const user = req.user;
+            if (!user) {
+                return res.status(httpStatus.UNAUTHORIZED).json({
+                    message: "Unauthorized"
+                })
+            }
+            logger.info("Update Background", value, type);
+            const profile = await profileService.updateBackgroundImage(user.id, type, value);
+            return res.status(httpStatus.OK).json({
+                profile
+            })
+        } catch (error) {
+
+        }
     }
 }

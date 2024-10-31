@@ -27,6 +27,7 @@ const envVarsSchema = z.object({
   GOOGLE_CALLBACK_URL: z.string(),
   REDIS_URL: z.string(),
   LOGTAIL_API_KEY: z.string(),
+  UNSPLASH_APPLICATION_ID: z.string(),
   UNSPLASH_ACCESS_KEY: z.string(),
   UNSPLASH_SECRET_KEY: z.string(),
 
@@ -101,4 +102,9 @@ export const config = {
     apiKey: envVars.CLOUDINARY_API_KEY,
     apiSecret: envVars.CLOUDINARY_API_SECRET
   },
+  unsplash: {
+    applicationId: envVars.UNSPLASH_APPLICATION_ID,
+    accessKey: envVars.UNSPLASH_ACCESS_KEY,
+    secretKey: envVars.UNSPLASH_SECRET_KEY
+  }
 };

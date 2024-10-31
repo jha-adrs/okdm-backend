@@ -29,5 +29,7 @@ router.get("/my-profile", checkAuthenticated, profileController.getMyProfile)
 
 router.get("/profile/:username", validate(profileValidator.getPublicProfileSchema), profileController.getPublicProfile);
 router.post("/update-avatar", checkAuthenticated, upload.single('avatar'), profileController.updateAvatar);
+router.put("/update-theme", checkAuthenticated, profileController.updateTheme);
+router.put("/update-background", checkAuthenticated , validate(profileValidator.updateBackgroundSchema), profileController.updateBackground);
 
 export default router;

@@ -17,6 +17,8 @@ import './config/db'; //Prisma client connection
 import authRoutes from './routes/v1/auth.routes';
 import profileRoutes from './routes/v1/profile.routes';
 import linkRoutes from './routes/v1/link.routes';
+import searchRoutes from './routes/v1/search.routes';
+
 import morgan from './middleware/morgan';
 import errorHandler from './middleware/error-handler';
 import logger from './config/logger';
@@ -70,6 +72,7 @@ app.use('/v1/auth', rateLimiter.authRateLimiterMiddleware, authRoutes);
 app.use(rateLimiter.otherRouteRateLimiterMiddleware); //Rate limiter for all other routes
 app.use('/v1/profile', profileRoutes);
 app.use('/v1/links', linkRoutes);
+app.use('/v1/search', searchRoutes);
 
 app.use((req, res) => {
   res.status(httpStatus.NOT_FOUND).send('Not Found');

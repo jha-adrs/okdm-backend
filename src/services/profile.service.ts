@@ -19,6 +19,7 @@ export const profileService = {
                 website: true,
                 designation: true,
                 designation_location: true,
+                theme: true,
                 UserLinks: {
                     where: {
                         isVisible: true
@@ -51,7 +52,8 @@ export const profileService = {
                 designation: true,
                 designation_location: true,
                 UserLinks: true,
-                userId: false
+                userId: false,
+                theme: true
             }
         });
         return profile
@@ -75,6 +77,38 @@ export const profileService = {
             data: {
                 avatar: uploadResult.secure_url
             }
+        });
+        return updatedProfile;
+    },
+    updateTheme: async (userID: string, theme: string) => {
+        // Private route
+        const updatedProfile = await prisma.userProfile.update({
+            where: {
+                userId: userID
+            },
+            data: {
+                theme
+            }
+        });
+        return updatedProfile;
+    },
+    updateBackgroundImage: async (userID: string, type: "COLOR" | "IMAGE", data: string) => {
+        // Private route
+        let query;
+        if (type === "IMAGE") {
+            query = {
+                background_image: data
+            }
+        } else {
+            query = {
+                background_color: data
+            }
+        }
+        const updatedProfile = await prisma.userProfile.update({
+            where: {
+                userId: userID
+            },
+            data: query
         });
         return updatedProfile;
     }

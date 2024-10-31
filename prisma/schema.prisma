@@ -49,6 +49,9 @@ model UserProfile {
   location             String?
   website              String?
   designation          UserDesignation?
+  theme                String           @default("default")
+  background_image     String?
+  background_color     String?
   designation_location String?
   User                 User             @relation(fields: [userId], references: [id])
   UserLinks            UserLinks[]
