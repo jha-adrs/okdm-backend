@@ -2,6 +2,8 @@ import { UploadApiResponse } from "cloudinary";
 import prisma from "../config/db"
 import logger from "../config/logger";
 import { cloudinaryService } from "../utils/cloudinary";
+import { UserDesignation, UserProfile } from "@prisma/client";
+import { userService } from "./user.service";
 
 export const profileService = {
     getPublicProfile: async (userID: string) => {
@@ -53,7 +55,10 @@ export const profileService = {
                 designation_location: true,
                 UserLinks: true,
                 userId: false,
-                theme: true
+                theme: true,
+                background_color: true,
+                background_image: true,
+                
             }
         });
         return profile
@@ -97,11 +102,13 @@ export const profileService = {
         let query;
         if (type === "IMAGE") {
             query = {
-                background_image: data
+                background_image: data,
+                background_color: null
             }
         } else {
             query = {
-                background_color: data
+                background_color: data,
+                background_image: null
             }
         }
         const updatedProfile = await prisma.userProfile.update({
@@ -111,5 +118,56 @@ export const profileService = {
             data: query
         });
         return updatedProfile;
+    },
+    updateProfile: async (userID: string, data: {
+        headline?: string,
+        bio?: string,
+        location?: string,
+        website?: string,
+        designation?: UserDesignation,
+        designation_location?: string,
+    }) => {
+        const existingProfile = await prisma.userProfile.findFirst({
+            where: {
+                userId: userID
+            }
+        });
+        if (!existingProfile) {
+            throw new Error("Profile not found")
+        }
+        const query: Partial<UserProfile> = {};
+        if (data.bio) {
+            query.bio = data.bio
+        }
+        if (data.designation) {
+            query.designation = data.designation
+        }
+        if (data.designation_location) {
+            query.designation_location = data.designation_location
+        }
+        if (data.headline) {
+            query.headline = data.headline
+        }
+        if (data.location) {
+            query.location = data.location
+        }
+        if (data.website) {
+            query.website = data.website
+        }
+
+        const updatedProfile = await prisma.userProfile.update({
+            where: {
+                userId: userID
+            },
+            data: query
+        });
+        return updatedProfile;
+    },
+    updateUsername: async (userID: string, username: string) => {
+        const isTaken = await userService.isUsernameTaken(username);
+        if (isTaken) {
+            throw new Error("Username is taken")
+        }
+        
     }
 }

@@ -106,12 +106,12 @@ passport.serializeUser((user, next) => {
 })
 passport.deserializeUser(async (user: any, next) => {
     // Find user by id
-    logger.info("Deserializing user", user);
+    //logger.info("Deserializing user", user);
     if (!user || !user.id) {
         return next(null, false);
     }
     const dbUser = await userService.getUserById(user.id);
-    logger.info("Deserialized user", dbUser);
+    //logger.info("Deserialized user", dbUser);
     if (!dbUser) {
         return next(null, false);
     }

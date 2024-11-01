@@ -117,5 +117,50 @@ export const profileController = {
         } catch (error) {
 
         }
+    },
+    updateProfile: async (req: Request, res: Response) => {
+        try {
+            const { body } = profileValidator.updateProfile.parse(req);
+            const user = req.user;
+            if (!user) {
+                return res.status(httpStatus.UNAUTHORIZED).json({
+                    message: "Unauthorized"
+                })
+            }
+            logger.info("Update Profile", body);
+            const profile = await profileService.updateProfile(user.id, body);
+            return res.status(httpStatus.OK).json({
+                profile
+            })
+
+        } catch (error) {
+            logger.error("ERROR IN PROFILE CONTROLLER, Update Profile", error);
+            return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+                message: "Internal server error"
+            })
+        }
+    },
+    updateUsername: async (req: Request, res: Response) => {
+        try {
+            const { body: { username } } = profileValidator.updateUsername.parse(req);
+            const user = req.user;
+            if (!user) {
+                return res.status(httpStatus.UNAUTHORIZED).json({
+                    message: "Unauthorized"
+                })
+            }
+            logger.info("Update username ", user.username, ' TO ', username);
+
+            const profile = await profileService.updateUsername(user.id, username);
+            return res.status(httpStatus.OK).json({
+                profile
+            })
+
+        } catch (error) {
+            logger.error("ERROR IN PROFILE CONTROLLER, Update Username", error);
+            return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
+                message: "Internal server error"
+            })
+        }
     }
 }
