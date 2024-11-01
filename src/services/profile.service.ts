@@ -2,7 +2,7 @@ import { UploadApiResponse } from "cloudinary";
 import prisma from "../config/db"
 import logger from "../config/logger";
 import { cloudinaryService } from "../utils/cloudinary";
-import { UserDesignation, UserProfile } from "@prisma/client";
+import { ProfileActionButtonType, UserDesignation, UserProfile } from "@prisma/client";
 import { userService } from "./user.service";
 
 export const profileService = {
@@ -12,26 +12,11 @@ export const profileService = {
             where: {
                 userId: userID
             },
-            select: {
-                profile_url: true,
-                headline: true,
-                bio: true,
-                avatar: true,
-                location: true,
-                website: true,
-                designation: true,
-                designation_location: true,
-                theme: true,
-                UserLinks: {
-                    where: {
-                        isVisible: true
-                    }
-                },
+            include: {
+                UserLinks: true,
                 User: {
                     select: {
-                        username: true,
-                        name: true,
-                        createdAt: true
+                        username: true
                     }
                 }
             }
@@ -43,8 +28,7 @@ export const profileService = {
         const profile = await prisma.userProfile.findFirst({
             where: {
                 userId: userID
-            },
-            select: {
+            }, select: {
                 profile_url: true,
                 headline: true,
                 bio: true,
@@ -53,12 +37,16 @@ export const profileService = {
                 website: true,
                 designation: true,
                 designation_location: true,
-                UserLinks: true,
-                userId: false,
                 theme: true,
                 background_color: true,
                 background_image: true,
-                
+                action_button_type: true,
+                action_button_text: true,
+                action_button_link: true,
+                seo_title: true,
+                seo_description: true,
+                seo_keywords: true,
+                UserLinks: true
             }
         });
         return profile
@@ -126,6 +114,12 @@ export const profileService = {
         website?: string,
         designation?: UserDesignation,
         designation_location?: string,
+        action_button_type?: ProfileActionButtonType,
+        action_button_text?: string,
+        action_button_link?: string,
+        seo_title?: string,
+        seo_description?: string,
+        seo_keywords?: string
     }) => {
         const existingProfile = await prisma.userProfile.findFirst({
             where: {
@@ -154,6 +148,25 @@ export const profileService = {
         if (data.website) {
             query.website = data.website
         }
+        if (data.action_button_type) {
+            query.action_button_type = data.action_button_type
+        }
+        if (data.action_button_text) {
+            query.action_button_text = data.action_button_text
+        }
+        if (data.action_button_link) {
+            query.action_button_link = data.action_button_link
+        }
+        if (data.seo_title) {
+            query.seo_title = data.seo_title || existingProfile.seo_title
+        }
+        if (data.seo_description) {
+            query.seo_description = data.seo_description || existingProfile.seo_description
+        }
+        if (data.seo_keywords) {
+            query.seo_keywords = data.seo_keywords || existingProfile.seo_keywords
+        }
+
 
         const updatedProfile = await prisma.userProfile.update({
             where: {
@@ -168,6 +181,6 @@ export const profileService = {
         if (isTaken) {
             throw new Error("Username is taken")
         }
-        
+
     }
 }

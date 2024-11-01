@@ -39,27 +39,41 @@ model User {
 }
 
 model UserProfile {
-  id                   Int              @id @default(autoincrement())
-  userId               String           @unique
-  profile_url          String?          @unique
-  isPublic             Boolean          @default(false)
+  id                   Int                     @id @default(autoincrement())
+  userId               String                  @unique
+  profile_url          String?                 @unique
+  isPublic             Boolean                 @default(false)
   headline             String?
   bio                  String?
   avatar               String?
   location             String?
   website              String?
   designation          UserDesignation?
-  theme                String           @default("default")
+  theme                String                  @default("default")
   background_image     String?
   background_color     String?
   designation_location String?
-  User                 User             @relation(fields: [userId], references: [id])
+  action_button_type   ProfileActionButtonType @default(OTHER)
+  action_button_text   String?
+  action_button_link   String?
+  seo_title            String?
+  seo_description      String?
+  seo_keywords         String?
+  User                 User                    @relation(fields: [userId], references: [id])
   UserLinks            UserLinks[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+}
+
+enum ProfileActionButtonType {
+  HIRE
+  CONNECT
+  FOLLOW
+  MESSAGE
+  OTHER
 }
 
 model UserLinks {

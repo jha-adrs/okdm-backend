@@ -8,7 +8,7 @@ interface Global {
 
 const prismaClientConfig = {
     log: [
-        { level: "query", emit: "event" },
+        //{ level: "query", emit: "event" },
         { level: "info", emit: "event" },
         { level: "warn", emit: "event" },
         { level: "error", emit: "event" },

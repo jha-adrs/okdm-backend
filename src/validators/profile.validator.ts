@@ -1,4 +1,4 @@
-import { UserDesignation } from "@prisma/client";
+import { ProfileActionButtonType, UserDesignation } from "@prisma/client";
 import { z } from "zod";
 
 export const profileValidator = {
@@ -33,6 +33,13 @@ export const profileValidator = {
             designation: z.nativeEnum(UserDesignation).optional(),
             designation_location: z.string().optional(),
             username: z.string().optional(),
+            headline: z.string().optional(),
+            action_button_type: z.nativeEnum(ProfileActionButtonType).optional(),
+            action_button_text: z.string().optional(),
+            action_button_link: z.string().optional(),
+            seo_title: z.string().optional(),
+            seo_description: z.string().optional(),
+            seo_keywords: z.string().optional(),
         })
     }),
     updateUsername: z.object({
