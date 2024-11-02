@@ -1,2 +1,4 @@
 TODO: PROXY THE GOOGLE AVATAR from OWN S3
 TODO: Add max OTP in a given time
+TODO: Frontend, add Link addition
+TODO: All external links should be redirect links, for tracking purpose. ex: okdm.me/external-link?redirect=https://a.com

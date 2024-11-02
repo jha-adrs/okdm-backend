@@ -18,7 +18,7 @@ export const profileValidator = {
             else if (data.type === "COLOR") {
                 //Should be a valid hex color or comma separated multiple colors
                 //#00416A,#799F0C,#FFE000
-                return /^#(?:[0-9a-fA-F]{3}){1,2}$/.test(data.value) || /^#(?:[0-9a-fA-F]{3}){1,2}(?:, ?#(?:[0-9a-fA-F]{3}){1,2})*$/.test(data.value)
+                return true;
 
             }
             return true;
