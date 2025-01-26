@@ -17,6 +17,12 @@ if (config.env !== 'test') {
 
 
 export const sendEmail = async (to: string, subject: string, text: string) => {
-    const msg = { from: config.email.from, to, subject, text };
-    await transport.sendMail(msg);
+    logger.info(`Sending email to ${to}`);
+    try {
+        const msg = { from: config.email.from, to, subject, text };
+        await transport.sendMail(msg);
+        logger.info(`Email sent to ${to}`);
+    } catch (error) {
+        logger.error(`Error sending email to ${to}: ${error}`);
+    }
 };
