@@ -57,9 +57,9 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: redisStore,
-    cookie: {
-      secure: config.env === 'production'
-    }
+    // cookie: {
+    //   secure: config.env === 'production'
+    // }
   })
 );
 app.use(passport.initialize());
