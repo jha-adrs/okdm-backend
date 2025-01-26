@@ -67,13 +67,19 @@ app.use(passport.session());
 app.use(morgan.successHandler);
 app.use(morgan.errorHandler);
 
-app.use('/v1/auth', rateLimiter.authRateLimiterMiddleware, authRoutes);
+//app.use('/v1/auth', rateLimiter.authRateLimiterMiddleware, authRoutes);
+app.use('/v1/auth', authRoutes);
 
-app.use(rateLimiter.otherRouteRateLimiterMiddleware); //Rate limiter for all other routes
+//app.use(rateLimiter.otherRouteRateLimiterMiddleware); //Rate limiter for all other routes
 app.use('/v1/profile', profileRoutes);
 app.use('/v1/links', linkRoutes);
 app.use('/v1/search', searchRoutes);
-
+app.get('/ping', (req, res) => {
+  res.json({
+    success: true,
+    message: 'pong'
+  })
+});
 app.use((req, res) => {
   res.status(httpStatus.NOT_FOUND).send('Not Found');
 });
