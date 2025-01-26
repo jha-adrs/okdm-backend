@@ -90,7 +90,7 @@ export const config = {
   logs: {
     level: process.env.LOG_LEVEL || 'silly',
   },
-  allowedOrigins: ['http://localhost:3000', 'http://localhost:4000', 'https://okdm.me'],
+  allowedOrigins: ['http://localhost:3000', 'http://localhost:4000', 'https://okdm.me', "https://okdm.platinumj.dev"],
   s3: {
     accessKey: envVars.AWS_S3_ACCESS_KEY,
     secretKey: envVars.AWS_S3_SECRET_KEY,
