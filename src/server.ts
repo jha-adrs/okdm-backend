@@ -57,9 +57,12 @@ app.use(
     resave: false,
     saveUninitialized: false,
     store: redisStore,
-    // cookie: {
-    //   secure: config.env === 'production'
-    // }
+    cookie: {
+      secure: config.env === 'production', // Set secure cookies in production
+      maxAge: 60000, // Example max age
+      sameSite: 'none', // Allow cross-site cookies
+      domain: '.platinumj.dev' // Set the domain for the cookie to allow sharing between subdomains
+    }
   })
 );
 app.use(passport.initialize());
