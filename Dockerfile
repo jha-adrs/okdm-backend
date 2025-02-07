@@ -5,6 +5,7 @@ RUN apk update && \
     rm -rf /var/cache/apk/*
 WORKDIR /usr/src/app
 COPY package*.json ./
+COPY ./prisma/schema.prisma /usr/src/app/prisma/schema.prisma
 RUN npm install
 
 COPY . .
