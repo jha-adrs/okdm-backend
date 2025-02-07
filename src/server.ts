@@ -39,24 +39,24 @@ app.use(
 app.options('*', cors());
 app.use(xss());
 
-const client = createClient({
-  url: config.redisUrl
-});
-client.connect();
-client.on('error', function (error) {
-  console.error(error);
-});
-const redisStore = new RedisStore({
-  client,
-  prefix: 'okdm:'
-});
+// const client = createClient({
+//   url: config.redisUrl
+// });
+// client.connect();
+// client.on('error', function (error) {
+//   console.error(error);
+// });
+// const redisStore = new RedisStore({
+//   client,
+//   prefix: 'okdm:'
+// });
 
 app.use(
   expressSession({
     secret: config.jwt.secret,
     resave: false,
     saveUninitialized: false,
-    store: redisStore,
+    //store: redisStore,
     cookie: {
       secure: false, // Set secure cookies in production
       maxAge: 60000 * 60 * 24 * 90 // 90 days
