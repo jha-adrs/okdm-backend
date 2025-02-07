@@ -60,8 +60,7 @@ app.use(
     cookie: {
       secure: true, // Set secure cookies in production
       maxAge: 60000 * 60 * 24 * 90, // 90 days
-      domain: '.platinumj.dev',
-       sameSite: 'none'
+      domain: 'platinumj.dev'
     }
   })
 );
