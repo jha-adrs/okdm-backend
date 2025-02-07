@@ -39,6 +39,8 @@ const envVarsSchema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string(),
   CLOUDINARY_API_KEY: z.string(),
   CLOUDINARY_API_SECRET: z.string(),
+  SAME_SITE_COOKIE: z.enum(['none', 'lax', 'strict']).default('none'),
+  COOKIES_DOMAIN: z.string().default('localhost'),
 })
 
 const parsedSchema = envVarsSchema.safeParse(process.env);
@@ -106,5 +108,9 @@ export const config = {
     applicationId: envVars.UNSPLASH_APPLICATION_ID,
     accessKey: envVars.UNSPLASH_ACCESS_KEY,
     secretKey: envVars.UNSPLASH_SECRET_KEY
+  },
+  cookies: {
+    sameSite: envVars.SAME_SITE_COOKIE,
+    domain: envVars.COOKIES_DOMAIN
   }
 };
