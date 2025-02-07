@@ -58,8 +58,10 @@ app.use(
     saveUninitialized: false,
     //store: redisStore,
     cookie: {
-      secure: false, // Set secure cookies in production
-      maxAge: 60000 * 60 * 24 * 90 // 90 days
+      secure: true, // Set secure cookies in production
+      maxAge: 60000 * 60 * 24 * 90, // 90 days
+      domain: '.platinumj.dev',
+       sameSite: 'none'
     }
   })
 );
