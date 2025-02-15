@@ -241,7 +241,7 @@ const isUsernameTaken = async (req: Request, res: Response) => {
 const loginSuccess = async (req: Request, res: Response) => {
     try {
         if (!req.user) {
-            logger.info("User not logged in")
+            logger.info("User not logged in", req.cookies, "HEADERS", req.headers)
             return res.status(httpStatus.UNAUTHORIZED).json({
                 message: "User not logged in"
             })

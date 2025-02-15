@@ -50,7 +50,7 @@ app.use(xss());
 //   client,
 //   prefix: 'okdm:'
 // });
-
+app.set('trust proxy', 1); // trust first proxy for secure cookies
 app.use(
   expressSession({
     secret: config.jwt.secret,
@@ -58,11 +58,7 @@ app.use(
     saveUninitialized: false,
     //store: redisStore,
     cookie: {
-      secure: true, // Set secure cookies in production
       maxAge: 60000 * 60 * 24 * 90, // 90 days
-      httpOnly: true,
-      sameSite: config.cookies.sameSite,
-      domain: config.cookies.domain
     }
   })
 );
