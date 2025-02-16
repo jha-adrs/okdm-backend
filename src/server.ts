@@ -59,6 +59,10 @@ app.use(
     //store: redisStore,
     cookie: {
       maxAge: 60000 * 60 * 24 * 90, // 90 days
+      domain: ".okdm.me",
+      secure: true,
+      httpOnly: true,
+      sameSite: 'none'
     }
   })
 );
